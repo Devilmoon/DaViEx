@@ -50,8 +50,11 @@ var chart = d3.select(".chart")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.tsv("data.tsv", type, function(error, data) {
-  x.domain(data.map(function(d) { return d.name; }));
+d3.csv("/static/data/GDP.csv", type, function(error, data) {
+    for (var i = 0; i < data.length; i++) {
+        console.log(data[i]);
+    }
+ /* x.domain(data.map(function(d) { return d.name; }));
   y.domain([0, d3.max(data, function(d) { return d.value; })]);
 
   chart.append("g")
@@ -71,11 +74,15 @@ d3.tsv("data.tsv", type, function(error, data) {
       .attr("y", function(d) { return y(d.value); })
       .attr("height", function(d) { return height - y(d.value); })
       .attr("width", x.rangeBand());
-});
+      */
 
+});
 function type(d) {
   d.value = +d.value; // coerce to number
   return d;
 }
 
 </script>
+<body>
+    <h1>test</h1>
+</body>

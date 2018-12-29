@@ -8,7 +8,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-df = pd.read_csv('.//data/gdp_growth.csv')
+df = pd.read_csv('./data/GDP_growth.csv')
 rows = [df.iloc[i] for i in range(len(df))]
 rows = [el[el.notnull()] for el in rows]
 

@@ -8,3 +8,7 @@ def hello():
 @app.route("/test")
 def test():
     return render_template("test.html")
+
+@app.route("/world")
+def world():
+    return render_template("world.html")
