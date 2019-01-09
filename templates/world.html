@@ -102,7 +102,6 @@ var output = document.getElementById("sliderValue");
 slider.oninput = function() {
   modifyMap(slider.value)
   output.innerHTML = slider.value;
-
 }
 </script>
 <script>
@@ -111,7 +110,6 @@ slider.oninput = function() {
     d3.csv("/static/data/CO2_emission_kt.csv", function(err, csvdata) {
         data = csvdata;
         modifyMap(1965, data)
-        console.log(data)
     });
 
     function modifyMap(year){
