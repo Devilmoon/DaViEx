@@ -8,7 +8,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-df = pd.read_csv('./static/data/all.csv')
+df = pd.read_csv('./static/data/all_2.csv')
 
 available_indicators = df['Indicator Name'].unique()
 
@@ -81,20 +81,24 @@ def update_graph(xaxis_column_name, yaxis_column_name,
                  xaxis_type, yaxis_type,
                  year_value):
     dff = df[df['Year'] == year_value]
-
-    return {
-        'data': [go.Scatter(
-            x=dff[dff['Indicator Name'] == xaxis_column_name]['Value'],
-            y=dff[dff['Indicator Name'] == yaxis_column_name]['Value'],
-            text=dff[dff['Indicator Name'] == yaxis_column_name]['Country Name'],
-            customdata=dff[dff['Indicator Name'] == yaxis_column_name]['Country Name'],
+    traces = []
+    for i in dff.Region.unique():
+        df_by_region = dff[dff['Region'] == i]
+        traces.append(go.Scatter(
+            x=df_by_region[df_by_region['Indicator Name'] == xaxis_column_name]['Value'],
+            y=df_by_region[df_by_region['Indicator Name'] == yaxis_column_name]['Value'],
+            text=df_by_region[df_by_region['Indicator Name'] == yaxis_column_name]['Country Name'],
+            customdata=df_by_region[df_by_region['Indicator Name'] == yaxis_column_name]['Country Name'],
             mode='markers',
             marker={
                 'size': 15,
                 'opacity': 0.5,
                 'line': {'width': 0.5, 'color': 'white'}
-            }
-        )],
+            }, name=i
+        ))
+
+    return {
+        'data': traces,
         'layout': go.Layout(
             xaxis={
                 'title': xaxis_column_name,
