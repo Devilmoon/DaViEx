@@ -12,3 +12,7 @@ def test():
 @app.route("/world")
 def world():
     return render_template("world.html")
+
+@app.route("/data-analysis")
+def data_analysis():
+    return render_template("data_analysis.html")
