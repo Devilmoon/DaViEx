@@ -3,12 +3,13 @@ import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 import plotly.graph_objs as go
+import math
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-df = pd.read_csv('./static/data/all_3.csv')
+df = pd.read_csv('./static/data/all_4.csv')
 
 available_indicators = df['Indicator Name'].unique()
 
@@ -96,9 +97,10 @@ def update_graph(xaxis_column_name, yaxis_column_name,
     traces = []
     for i in dff.Region.unique():
         df_by_region = dff[dff['Region'] == i]
-        bubble_size_variable = 'Renewable energy consumption (% of total final energy consumption)'
+        bubble_size_variable = 'Population, total'
+        t = df_by_region[df_by_region['Indicator Name'] == bubble_size_variable].dropna()
         if apply_bubble_size:
-            bubble_size = df_by_region[df_by_region['Indicator Name'] == bubble_size_variable]['Value']
+            bubble_size = t['Value']
         else: 
             bubble_size = 15
         traces.append(go.Scatter(
