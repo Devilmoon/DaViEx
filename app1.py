@@ -9,8 +9,8 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-df = pd.read_csv('./static/data/all_4.csv')
-
+df = pd.read_csv('./static/data/all_5.csv')
+df = df.dropna(subset=['Region'])
 available_indicators = df['Indicator Name'].unique()
 
 app.layout = html.Div([
@@ -98,11 +98,22 @@ def update_graph(xaxis_column_name, yaxis_column_name,
     for i in dff.Region.unique():
         df_by_region = dff[dff['Region'] == i]
         bubble_size_variable = 'Population, total'
-        t = df_by_region[df_by_region['Indicator Name'] == bubble_size_variable].dropna()
+        t = df_by_region[df_by_region['Indicator Name'] == bubble_size_variable].fillna(100000)
         if apply_bubble_size:
-            bubble_size = t['Value']
+            '''
+            t = df_by_region[df_by_region['Indicator Name'] == bubble_size_variable]
+            x = df_by_region[df_by_region['Indicator Name'] == xaxis_column_name]
+            x_list = df_by_region[df_by_region['Indicator Name'] == xaxis_column_name]["Country Name"].unique()
+            y = df_by_region[df_by_region['Indicator Name'] == yaxis_column_name]
+            y_list = df_by_region[df_by_region['Indicator Name'] == yaxis_column_name]["Country Name"].unique()
+            for c in x_list:
+                if x[x["Country Name"] == c ]["Value"] ==  or y[y["Country Name"] == c ]["Value"] == 'nan':
+            bubble_size = []'''
+            bubble_size = []
+            [bubble_size.append(a/100000) for a in t['Value']]
         else: 
             bubble_size = 15
+       # print(len(df_by_region[df_by_region['Indicator Name'] == yaxis_column_name]['Country Name']))
         traces.append(go.Scatter(
             x=df_by_region[df_by_region['Indicator Name'] == xaxis_column_name]['Value'],
             y=df_by_region[df_by_region['Indicator Name'] == yaxis_column_name]['Value'],
@@ -112,6 +123,7 @@ def update_graph(xaxis_column_name, yaxis_column_name,
             marker={
                 'sizemode': 'area', 
                 'opacity': 0.5,
+                'sizemin': 10,
                 'size': bubble_size,
                 'line': {'width': 0.5, 'color': 'white'}
             }, name=i
@@ -181,4 +193,4 @@ def update_x_timeseries(hoverData, yaxis_column_name, axis_type):
     return create_time_series(dff, axis_type, yaxis_column_name)
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, port=8053)

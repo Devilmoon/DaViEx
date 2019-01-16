@@ -8,7 +8,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-df = pd.read_csv('./static/data/all_3.csv')
+df = pd.read_csv('./static/data/all_2.csv')
 country_df = df[df['Country Name'] == 'Denmark']
 variable_1_df = country_df[country_df['Indicator Name'] == 'GDP (current US$)']
 variable_2_df = country_df[country_df['Indicator Name'] == 'CO2 emissions (kt)']
