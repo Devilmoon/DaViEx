@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="static/vendor/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+    <style media="screen">
+      body {
+        width: 100vw;
+        height: 100vh;
+      }
+
+      .container {
+        display: block;
+        width: 90%;
+        height: 100%;
+        margin-left: 5%;
+      }
+
+      .content {
+        width: 100%;
+        height: 100%;
+      }
+
+      .charts{
+        width:100%;
+        height: 50%;
+        display: inline-block;
+      }
+
+      .chart {
+        height: 100%;
+      }
+
+      .chart.left {
+        width: 70%;
+        display: inline-block;
+        float: left;
+      }
+
+      .chart.right {
+        width: 30%;
+        display: inline-block;
+        float: left;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="content">
+        <div class="charts">
+          <div class="chart left" id="map">
+
+          </div>
+          <div class="chart right" id="bar">
+
+          </div>
+        </div>
+        <div class="slidecontainer" width="100%">
+            <input type="range" min="1960" max="2014" value="1960" class="slider" id="year_selector" style="width: 100%">
+            <p>Data from <span id="sliderValue">1960</span></p>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+
+      let selector = document.getElementById('year_selector')
+      let base_year = 1960
+      let selected_year = parseInt(selector.value)
+      let full_data, fossil_data, renewable_data, nuclear_data, barchart_formatted_data, world_chart, bar_chart
+      let year_column = 4 + selected_year - base_year
+      let selected_nation = "Italy"
+
+
+      let mapOption = {
+        animation: true,
+        animationDuration: 4000,
+        title: {
+          text: 'CO2 Emissions',
+          subtext: 'Metric tons per capita',
+          sublink: 'http://example.org',
+          left: 'center',
+          top: 'top'
+        },
+        tooltip: {
+          trigger: 'item',
+          formatter: function (params) {
+            var value = (params.value + '').split('.');
+            value = value[0].replace(/(\d{1,3})(?=(?:\d{3})+(?!\d))/g, '$1,')
+              + '.' + value[1];
+            return /*params.name + ': ' +*/ ( isNaN(parseFloat(value)) ? 'Data not available for selected year' : value );
+          }
+        },
+        toolbox: {
+          show: false
+        },
+        visualMap: {
+          min: '',
+          max: '',
+          left: 0,
+          top: 'middle',
+          text:['High','Low'],
+          realtime: false,
+          calculable: true,
+          inRange: {
+            color: ['green', 'orange', 'orangered']
+          }
+        },
+        series: [
+          {
+            name: 'CO2 Emissions',
+            type: 'map',
+            mapType: 'world',
+            roam: false,
+            itemStyle: {
+              emphasis: {
+                label: {
+                  show:false
+                }
+              }
+            },
+            data: []
+          }
+        ]
+      }
+
+      let barItemStyle = {
+        normal: {
+        },
+        emphasis: {
+          barBorderWidth: 1,
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowOffsetY: 0,
+          shadowColor: 'rgba(0,0,0,0.5)'
+        }
+      }
+
+      let barOption = {
+        title: {
+          text: 'Energy sources',
+          subtext: '%',
+          sublink: 'http://example.org',
+          left: 'center',
+          top: 'top'
+        },
+        legend: {
+          data: ['Fossil fuel', 'Renewable', 'Alternative and Nuclear', 'Other sources (no data)'],
+          align: 'left',
+          left: 0,
+          bottom: 0
+        },
+        tooltip: {
+          formatter: function(params){
+            return params.seriesName + "</br>" + Number((params.value).toFixed(2)) + "%"
+          }
+        },
+        xAxis: {
+          data: [selected_year],
+          name: '',
+          silent: false,
+          axisLine: {
+            onZero: true
+          },
+          splitLine: {
+            show: false
+          },
+          splitArea: {
+            show: false
+          }
+        },
+        yAxis: {
+          min: 0,
+          max: 100,
+          show: false,
+          splitArea: {
+            show: false
+          }
+        },
+        grid: {
+          left: 100
+        },
+        series: [
+          {
+            name: 'Fossil fuel',
+            type: 'bar',
+            stack: 'main',
+            itemStyle: barItemStyle,
+            data: []
+          },
+          {
+            name: 'Renewable',
+            type: 'bar',
+            stack: 'main',
+            itemStyle: barItemStyle,
+            data: []
+          },
+          {
+            name: 'Alternative and Nuclear',
+            type: 'bar',
+            stack: 'main',
+            itemStyle: barItemStyle,
+            data: []
+          },
+          {
+            name: 'Other sources (no data)',
+            type: 'bar',
+            stack: 'main',
+            itemStyle: barItemStyle,
+            data: []
+          }
+      ]}
+
+      selector.addEventListener('input', function(evt){
+        document.getElementById('sliderValue').innerHTML = evt.srcElement.value
+      })
+
+      selector.addEventListener('change', function(evt){
+        selected_year = parseInt(evt.srcElement.value)
+        document.getElementById('sliderValue').innerHTML = selected_year
+        repaintMapChart(world_chart, full_data, selected_year)
+        repaintBarChart(bar_chart, fossil_data, renewable_data, nuclear_data, selected_year, selected_nation)
+      })
+
+      let excluded_rows = [
+        'Central Europe and the Baltics',
+        'East Asia & Pacific (excluding high income)',
+        'East Asia & Pacific',
+        'European Union',
+        'High income',
+        'Post-demographic dividend',
+        'World',
+        'Arab World',
+        'IBRD only',
+        'IDA & IBRD total',
+        'North America',
+        'OECD members',
+        'Low & middle income',
+        'Middle income',
+        'Late-demographic dividend',
+        'Upper middle income',
+        'East Asia & Pacific (IDA & IBRD countries)'
+      ]
+
+      function formatMapData(data, selected_year){
+        let selected_year_column = 4 + selected_year - base_year
+        let formatted_data = []
+        for (let i = 1; i < data.length; i++){
+          if (excluded_rows.indexOf(data[i][0]) == -1){
+            formatted_data.push({
+              name: data[i][0],
+              value: data[i][selected_year_column]
+            })
+          }
+        }
+        return formatted_data
+      }
+
+      function formatBarData(f_data, r_data, n_data, selected_year){
+        let selected_year_column = 4 + selected_year - base_year
+        let formatted_data = {
+          fossil: {},
+          renewable: {},
+          nuclear: {},
+          other: {}
+        }
+        for (let i = 1; i < f_data.length; i++){
+          if (excluded_rows.indexOf(f_data[i][0]) == -1){
+            formatted_data.fossil[f_data[i][0]] = isNaN(parseFloat(f_data[i][selected_year_column])) ? [0] : [parseFloat(f_data[i][selected_year_column])]
+            formatted_data.renewable[r_data[i][0]] = isNaN(parseFloat(r_data[i][selected_year_column])) ? [0] : [parseFloat(r_data[i][selected_year_column])]
+            formatted_data.nuclear[n_data[i][0]] = isNaN(parseFloat(n_data[i][selected_year_column])) ? [0] : [parseFloat(n_data[i][selected_year_column])]
+            let other = parseFloat(100 - (
+              parseFloat(formatted_data.fossil[f_data[i][0]]) +
+              parseFloat(formatted_data.renewable[r_data[i][0]]) +
+              parseFloat(formatted_data.nuclear[n_data[i][0]])
+            ))
+            formatted_data.other[n_data[i][0]] = [(other >= 0 ? other : 0)]
+          }
+        }
+        return formatted_data
+      }
+
+      function getMapBounds(data){
+        let base = isNaN(parseFloat(data[0].value)) ? 0 : parseFloat(data[0].value)
+        let min = base, max = base
+        for(let i = 1; i < data.length; i++){
+          let val = isNaN(parseFloat(data[i].value)) ? 0 : parseFloat(data[i].value)
+          if ((val < min && val != 0) || min == 0) min = val
+          if (val > max) max = val
+        }
+        return [min, max]
+      }
+
+      function repaintMapChart(target, data, year){
+        let formatted_data = formatMapData(data, year)
+
+        let bounds = getMapBounds(formatted_data)
+
+        mapOption.visualMap.min = bounds[0]
+        mapOption.visualMap.max = bounds[1]
+        mapOption.series[0].data = formatted_data
+
+        target.setOption(mapOption)
+      }
+
+      function repaintBarChart(target, f_data, r_data, n_data, selected_year, nation){
+        barchart_formatted_data = formatBarData(f_data, r_data, n_data, selected_year)
+
+        changeBarChartNation(target, nation)
+      }
+
+      function changeBarChartNation(target, nation){
+        barOption.title.subtext = '%, ' + nation
+        barOption.xAxis.data = [selected_year]
+        barOption.series[0].data = barchart_formatted_data.fossil[nation]
+        barOption.series[1].data = barchart_formatted_data.renewable[nation]
+        barOption.series[2].data = barchart_formatted_data.nuclear[nation]
+        barOption.series[3].data = barchart_formatted_data.other[nation]
+
+        target.setOption(barOption)
+      }
+      require(['https://cdnjs.cloudflare.com/ajax/libs/echarts/4.1.0/echarts.min.js'], function(echarts){
+        $.get('/static/vendor/echarts/map/world-topo-min.json', function(map){
+          echarts.registerMap("world", map)
+          world_chart = echarts.init(document.getElementById('map'))
+          bar_chart = echarts.init(document.getElementById('bar'))
+          require(['https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.6.3/papaparse.min.js'], function(Papa){
+            $.get('/static/data/CO2_emissions_per_capita.csv', function(data){
+              full_data = Papa.parse(data).data
+
+              repaintMapChart(world_chart, full_data, selected_year)
+
+              $.get('/static/data/fossil_fuel_energy_consumption.csv', function(f_data){
+                fossil_data = Papa.parse(f_data).data
+                $.get('/static/data/renewable_energy_consumption.csv', function(r_data){
+                  renewable_data = Papa.parse(r_data).data
+                  $.get('/static/data/alternative_and_nuclear_energy.csv', function(n_data){
+                    nuclear_data = Papa.parse(n_data).data
+                    repaintBarChart(bar_chart, fossil_data, renewable_data, nuclear_data, selected_year, "Italy")
+                  })
+                })
+              })
+
+              bar_chart.setOption(barOption)
+
+              window.onresize = function(event){
+                world_chart.resize()
+                bar_chart.resize()
+              }
+
+              world_chart.on('click', function(params){
+                selected_nation = params.name
+                changeBarChartNation(bar_chart, selected_nation)
+              })
+            })
+          })
+        })
+      })
+
+    </script>
+  </body>
+</html>
