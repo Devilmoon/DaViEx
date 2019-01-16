@@ -1,0 +1,5 @@
+Fare una pagina interattiva con diversi passaggi possibili, per esempio 
+1) "la situazione del mondo", con la mappa mondiale con i vari dataset printati sulla cartina
+2) "comprensione dei dati", con il plot di Luca che è multivariate perchè plotta due dataset, con i dati dei diversi paesi in diversi anni (4 variabili totali)
+3) "come influenzano le energie rinnovabili", con un asse "fisso" con i dati delle renwable energies, e un asse che mostra gli altri
+4) "i singoli casi" il grafico che ha fatto Luca dove viene caricato 1 dataset con l'andamento dei vari paesi nel corso degli anni
