@@ -7,7 +7,7 @@
 ## 1st step, clone the repository
 
 ```bash
-git clone https://github.com/Devilmoon/DaViEx/
+git clone https://github.com/Devilmoon/DaViEx.git
 cd repo
 ```
 
